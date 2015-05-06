@@ -102,7 +102,7 @@ test <- test.dat[!myvars]
 
 train_var = train[-147]
 
-control <- trainControl(method="boot")
+control <- trainControl(method="cv")
 modelFitrf = train(train$classe ~ ., method = "rf", data = train_var,trControl=control)
 modelFitrf
 prf = predict(modelFitrf, newdata=test)
@@ -114,4 +114,17 @@ library(rpart)
 model.rpart <- rpart(train$classe ~ ., train_var)
 library(rattle)
 fancyRpartPlot(model.rpart )
+
+
+ctrl = trainControl("cv", number=10, savePredictions=T,  
+                    classProbs=TRUE, summaryFunction=twoClassSummary )  
+tr_glm = train(pizza_rec ~ .,
+               data      = training,
+               method    = "glm",
+               family    = binomial,
+               trControl = ctrl, 
+               metric="ROC")
+fitpred = tr_glm$finalModel$fitted.values
+fitpredt = function(t) ifelse(fitpred > t , 1,0)
+confusionMatrix(fitpredt(0.5),training$pizza_rec)
 
